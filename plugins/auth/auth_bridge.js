@@ -13,6 +13,9 @@ exports.load_flat_ini = function () {
 }
 
 exports.check_plain_passwd = function (connection, user, passwd, cb) {
+    // don't check provided credentials, they will be checked during the forward action
+    return cb(true);
+
     let host = this.cfg.main.host;
     if (this.cfg.main.port) {
         host = `${host}:${this.cfg.main.port}`;

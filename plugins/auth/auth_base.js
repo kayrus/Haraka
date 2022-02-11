@@ -107,7 +107,8 @@ exports.check_user = function (next, connection, credentials, method) {
                 (valid  ? '2.7.0 Authentication successful' : '5.7.8 Authentication failed');
 
         if (valid) {
-            connection.relaying = true;
+            // commenting this out, because the passwd_ok is called from auth_bridge: cb(true)
+            // connection.relaying = true;
             connection.results.add({name:'relay'}, {pass: plugin.name});
             connection.results.add(plugin, {pass: method});
 

@@ -29,6 +29,14 @@ exports.register = function () {
     plugin.register_hook('get_mx', 'get_mx'); // for relaying outbound messages
 }
 
+exports.hook_data_post = (next, connection) => {
+    const txn = connection.transaction;
+    // Copy auth notes to transaction notes so they're available in hmail.todo.notes
+    txn.notes.auth_user = connection.notes.auth_user;
+    txn.notes.auth_passwd = connection.notes.auth_passwd;
+    return next();
+}
+
 exports.load_smtp_forward_ini = function () {
     const plugin = this;
 
@@ -242,12 +250,17 @@ exports.queue_forward = function (next, connection) {
     const cfg = plugin.get_config(conn);
     if (!plugin.forward_enabled(conn, cfg)) return next();
 
-    smtp_client_mod.get_client_plugin(plugin, conn, cfg, (err, smtp_client) => {
+    const auth = cfg
+    // reuse credentials, provided by client
+    auth.auth_user = txn.notes.auth_user
+    auth.auth_pass = txn.notes.auth_passwd
+
+    smtp_client_mod.get_client_plugin(plugin, conn, auth, (err, smtp_client) => {
         smtp_client.next = next;
 
         let rcpt = 0;
 
-        if (cfg.auth_user) plugin.auth(cfg, conn, smtp_client);
+        if (auth.auth_user) plugin.auth(auth, conn, smtp_client);
 
         conn.loginfo(plugin, `forwarding to ${
             cfg.forwarding_host_pool ? 'host_pool' : `${cfg.host}:${cfg.port}`}`
