@@ -18,7 +18,7 @@ exports.load_tls_ini = function () {
 
 
 exports.hook_capabilities = (next, connection) => {
-    if (connection.tls.enabled) {
+    if (true || connection.tls.enabled) {
         const methods = [ 'PLAIN', 'LOGIN' ];
         connection.capabilities.push(`AUTH ${methods.join(' ')}`);
         connection.notes.allowed_auth_methods = methods;
